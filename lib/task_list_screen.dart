@@ -18,19 +18,18 @@ class _TaskListScreenState extends State<TaskListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("ToDo list"),
-      ),
+          title: Text("Задачи на сегодня"),
+          backgroundColor: Colors.greenAccent),
       body: _TaskListBody(
         tasks: list,
+        onRemovePressed: _removeTask,
+        taskCompletedChanged: _setIsCompleted,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           _showAddTaskDialog(context);
         },
-        child: Text(
-          '+',
-          style: TextStyle(fontSize: 25),
-        ),
+        child: Text('+', style: TextStyle(fontSize: 25)),
       ),
     );
   }
@@ -76,36 +75,46 @@ class _TaskListScreenState extends State<TaskListScreen> {
       },
     );
   }
+
+  void _setIsCompleted(Task task, bool value) {
+    final newTask = task.copyWith(isCompleted: value);
+    setState(
+      () {
+        final index = list.indexOf(task);
+        list[index] = newTask;
+      },
+    );
+  }
+
+  void _removeTask(Task task) {
+    setState(
+      () {
+        list.remove(task);
+      },
+    );
+  }
 }
 
-class _TaskListBody extends StatefulWidget {
-  final List<Task> tasks;
+typedef TaskRemove = void Function(Task task);
+typedef TaskCompleteChanged = void Function(Task task, bool value);
 
-  const _TaskListBody({Key key, @required this.tasks})
+class _TaskListBody extends StatelessWidget {
+  final List<Task> tasks;
+  final TaskRemove onRemovePressed;
+  final TaskCompleteChanged taskCompletedChanged;
+
+  const _TaskListBody(
+      {Key key,
+      @required this.tasks,
+      @required this.onRemovePressed,
+      @required this.taskCompletedChanged})
       : assert(tasks != null),
+        assert(onRemovePressed != null),
+        assert(taskCompletedChanged != null),
         super(key: key);
 
-  @override
-  _TaskListBodyState createState() => _TaskListBodyState();
-}
-
-class _TaskListBodyState extends State<_TaskListBody> {
-  List<Task> _tasks;
-
-  @override
-  void initState() {
-    super.initState();
-    _tasks = widget.tasks.toList();
-  }
-
-  @override
-  void didUpdateWidget(_TaskListBody oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _tasks = widget.tasks.toList();
-  }
-
   Widget build(BuildContext context) {
-    final list = _tasks;
+    final list = tasks;
     return ListView.builder(
       padding: const EdgeInsets.all(8),
       itemCount: list.length,
@@ -125,42 +134,21 @@ class _TaskListBodyState extends State<_TaskListBody> {
             value: task.isCompleted,
             onChanged: (bool value) {
               if (value != task.isCompleted) {
-                _setIsCompleted(task, value);
-                _tasks.remove(1);
+                taskCompletedChanged(task, value);
               }
             },
           ),
           Text(' ${task.text}'),
           IconButton(
             icon: Icon(Icons.delete),
+            color: Colors.deepOrangeAccent,
             onPressed: () {
-              _removeTask(task, false);
+              onRemovePressed(task);
               // Navigator.of(context).pop();
             },
           )
         ],
       ),
-    );
-  }
-
-  void _setIsCompleted(Task task, bool value) {
-    final newTask = task.copyWith(isCompleted: value);
-    setState(
-      () {
-        final index = _tasks.indexOf(task);
-        _tasks[index] = newTask;
-      },
-    );
-  }
-
-  void _removeTask(Task task, bool value) {
-    final newTask = task.copyWith(isCompleted: value);
-    setState(
-      () {
-        final index = _tasks.indexOf(task);
-        _tasks[index] = newTask;
-        _tasks.removeAt(index);
-      },
     );
   }
 }

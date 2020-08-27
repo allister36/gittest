@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:test12/task.dart';
 
-class TaskListScreen extends StatelessWidget {
+class TaskListScreen extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return _TaskListScreenState();
+  }
+}
+
+class _TaskListScreenState extends State<TaskListScreen> {
+  final list = [
+    Task("1 задача", true),
+    Task("2 задача", true),
+    Task("3 задача", false),
+  ];
   @override
   Widget build(BuildContext context) {
-    // TODO: временно генерируем данные
-    final list = [
-      Task("asda0", true),
-      Task("asda1", true),
-      Task("asda", false),
-    ];
-
     return Scaffold(
       appBar: AppBar(
         title: Text("ToDo list"),
@@ -18,6 +23,57 @@ class TaskListScreen extends StatelessWidget {
       body: _TaskListBody(
         tasks: list,
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _showAddTaskDialog(context);
+        },
+        child: Text(
+          '+',
+          style: TextStyle(fontSize: 25),
+        ),
+      ),
+    );
+  }
+
+  void _showAddTaskDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        final TextEditingController _textController = TextEditingController();
+        final alertDialog = AlertDialog(
+          title: Text("Добавление записи"),
+          content: Row(
+            children: <Widget>[
+              Expanded(
+                child: TextField(
+                  autofocus: true,
+                  decoration: InputDecoration(hintText: "Новая запись"),
+                  controller: _textController,
+                  onChanged: (value) {},
+                ),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("ОК"),
+              onPressed: () {
+                setState(() {
+                  list.add(Task(_textController.text, false));
+                });
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: Text("Отмена"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            )
+          ],
+        );
+        return alertDialog;
+      },
     );
   }
 }
@@ -39,11 +95,15 @@ class _TaskListBodyState extends State<_TaskListBody> {
   @override
   void initState() {
     super.initState();
-
     _tasks = widget.tasks.toList();
   }
 
   @override
+  void didUpdateWidget(_TaskListBody oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _tasks = widget.tasks.toList();
+  }
+
   Widget build(BuildContext context) {
     final list = _tasks;
     return ListView.builder(
@@ -66,10 +126,18 @@ class _TaskListBodyState extends State<_TaskListBody> {
             onChanged: (bool value) {
               if (value != task.isCompleted) {
                 _setIsCompleted(task, value);
+                _tasks.remove(1);
               }
             },
           ),
-          Text('Задача:  ${task.text}'),
+          Text(' ${task.text}'),
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () {
+              _removeTask(task, false);
+              // Navigator.of(context).pop();
+            },
+          )
         ],
       ),
     );
@@ -77,9 +145,22 @@ class _TaskListBodyState extends State<_TaskListBody> {
 
   void _setIsCompleted(Task task, bool value) {
     final newTask = task.copyWith(isCompleted: value);
-    setState(() {
-      final index = _tasks.indexOf(task);
-      _tasks[index] = newTask;
-    });
+    setState(
+      () {
+        final index = _tasks.indexOf(task);
+        _tasks[index] = newTask;
+      },
+    );
+  }
+
+  void _removeTask(Task task, bool value) {
+    final newTask = task.copyWith(isCompleted: value);
+    setState(
+      () {
+        final index = _tasks.indexOf(task);
+        _tasks[index] = newTask;
+        _tasks.removeAt(index);
+      },
+    );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test12/info_page.dart';
 import 'package:test12/task.dart';
 
 class TaskListScreen extends StatefulWidget {
@@ -16,10 +17,23 @@ class _TaskListScreenState extends State<TaskListScreen> {
   ];
   @override
   Widget build(BuildContext context) {
+    final someVar = [1, 2, 3];
     return Scaffold(
+      backgroundColor: Colors.lightGreenAccent[100],
       appBar: AppBar(
-          title: Text("Задачи на сегодня"),
-          backgroundColor: Colors.greenAccent),
+        title: Text("Задачи на сегодня"),
+        backgroundColor: Colors.black26,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.info, color: Colors.lime),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => InfoPage(),
+              ),
+            ),
+          ),
+        ],
+      ),
       body: _TaskListBody(
         tasks: list,
         onRemovePressed: _removeTask,
@@ -29,6 +43,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
         onPressed: () {
           _showAddTaskDialog(context);
         },
+        backgroundColor: Colors.lime[800],
         child: Text('+', style: TextStyle(fontSize: 25)),
       ),
     );
@@ -132,6 +147,8 @@ class _TaskListBody extends StatelessWidget {
         children: [
           Checkbox(
             value: task.isCompleted,
+            checkColor: Colors.teal[400],
+            activeColor: Colors.amber[300],
             onChanged: (bool value) {
               if (value != task.isCompleted) {
                 taskCompletedChanged(task, value);
@@ -141,7 +158,7 @@ class _TaskListBody extends StatelessWidget {
           Text(' ${task.text}'),
           IconButton(
             icon: Icon(Icons.delete),
-            color: Colors.deepOrangeAccent,
+            color: Colors.red[600],
             onPressed: () {
               onRemovePressed(task);
               // Navigator.of(context).pop();
